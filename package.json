@@ -1,0 +1,44 @@
+{
+	"name": "metacritic-stremio-addon",
+	"version": "0.0.1",
+	"description": "Brings one of the most respected critics aggregators of the world to Stremio. Check critics scores and all \"Must See\" Movies and TV Shows recommended by Metacritic.",
+	"main": "dist/index.js",
+	"typings": "dist/index.d.ts",
+	"scripts": {
+		"tsc": "./node_modules/.bin/tsc --skipLibCheck",
+		"nodemon": "./node_modules/.bin/nodemon",
+		"clean": "rm -rf ./dist",
+		"start": "npm run tsc && npm run server",
+		"c": "npm run tsc && bash ./ignore/updateMovieList.sh",
+		"server": "node ./dist/server.js",
+		"dev": "./node_modules/.bin/nodemon -e ts  -i \"*.d.ts\" --exec \"npm run tsc && npm run server\""
+	},
+	"files": [
+		"dist"
+	],
+	"keywords": [],
+	"author": "= <=>",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/node": "^9.0.0",
+		"nodemon": "^1.18.10",
+		"source-map": "^0.6.1",
+		"source-map-support": "^0.5.11",
+		"typescript": "^2.9.0"
+	},
+	"dependencies": {
+		"@google-cloud/storage": "^4.1.3",
+		"class-transformer": "^0.2.0",
+		"jimp": "^0.9.3",
+		"lodash": "^4.17.11",
+		"moment": "^2.24.0",
+		"mongoose": "5.4.19",
+		"name-to-imdb": "^2.3.2",
+		"reflect-metadata": "^0.1.13",
+		"request": "^2.88.0",
+		"request-promise-native": "^1.0.8",
+		"source-map-support": "^0.5.11",
+		"stremio-addon-sdk": "1.1.x",
+		"uuid": "^3.3.3"
+	}
+}
