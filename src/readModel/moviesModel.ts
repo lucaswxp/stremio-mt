@@ -1,6 +1,8 @@
 import { existsSync, createReadStream, createWriteStream } from "fs"
 import { createGunzip, createGzip } from "zlib"
 import { Movie } from '../shared/dsl'
+import * as _ from 'lodash'
+
 const MOVIES_PATH = (__dirname + `/../../database-movies.gz`)
 
 /**
@@ -127,11 +129,15 @@ const MOVIES_PATH = (__dirname + `/../../database-movies.gz`)
  */
 
 export class MoviesStore {
-    database: Movie[] = []
-	static instance: MoviesStore
+    private static allMovies: Movie[]
+	private allMoviesTop: Movie[]
+	private allMoviesMustSee: Movie[]
+	
+	private static instance: MoviesStore
+    private database: Movie[] = []
 	
 	constructor(db){
-		this.database = db||[]
+		this.database = MoviesStore.allMovies||[]
 	}
 
     static async getInstance(){
@@ -146,6 +152,7 @@ export class MoviesStore {
 		const all = await this.all()
 		let genres: Set<string> = new Set
 		all.forEach(x => {
+			if(!x.data.genre) return
 			x.data.genre.forEach(genre => {
 				genres.add(genre)
 			})
@@ -153,27 +160,61 @@ export class MoviesStore {
 		return [...genres]
 	}
 
-	static all(): Promise<Movie[]>{
-		if(!existsSync(MOVIES_PATH)) return Promise.resolve([])
+	static async all(): Promise<Movie[]>{
+		if(this.allMovies == undefined){
 
-		return new Promise((resolve, reject) => {
-			let data = ''
-			const fileContents = createReadStream(MOVIES_PATH);
-			const unzip = createGunzip();
-			const piped = fileContents.pipe(unzip)
-	
-			piped.on('data', (e) => {
-				data += e.toString()
+			if(!existsSync(MOVIES_PATH)) return Promise.resolve([])
+
+			this.allMovies = await new Promise<Movie[]>((resolve, reject) => {
+				let data = ''
+				const fileContents = createReadStream(MOVIES_PATH);
+				const unzip = createGunzip();
+				const piped = fileContents.pipe(unzip)
+		
+				piped.on('data', (e) => {
+					data += e.toString()
+				})
+				piped.on('end', (err) => {
+					if (err) return reject(err);
+					else resolve(JSON.parse(data).map(x => Movie.fromJSON(x)));
+				})
 			})
-			piped.on('end', (err) => {
-				if (err) return reject(err);
-				else resolve(JSON.parse(data).map(x => Movie.fromJSON(x)));
+
+			this.allMovies = this.allMovies.filter(x => {
+				return (x.data.datePublished||new Date).getTime() < Date.now()
 			})
-		})
+		}
+
+		return this.allMovies
 	}
 
 	async all(){
 		return MoviesStore.all()
+	}
+
+	async mustSee(){
+		if(this.allMoviesMustSee == undefined){
+			this.allMoviesMustSee = [...await this.all()]
+
+			this.allMoviesMustSee = this.allMoviesMustSee.filter(x => x.getScore(0) > 70 && x.data.totalUserReviews > 20)
+			this.allMoviesMustSee = _.orderBy(this.allMoviesMustSee, [
+				(item: Movie) => item.getScore(0),
+				(item: Movie) => item.interestLevelNumber
+			], ['desc', 'desc'])
+		}
+		return this.allMoviesMustSee
+	}
+
+	async top(){
+		if(this.allMoviesTop == undefined){
+			this.allMoviesTop = [...await this.all()]
+			this.allMoviesTop = _.orderBy(this.allMoviesTop, [
+				yearScore, // closest to current year
+				(item: Movie) => item.interestLevelNumber,
+				(item: Movie) => (item.data.datePublished||new Date(1950)).getTime()
+			], ['asc', 'desc', 'desc'])
+		}
+		return this.allMoviesTop
 	}
 	
 	/**
@@ -194,12 +235,19 @@ export class MoviesStore {
 			const zip = createGzip();
 			zip.pipe(stream)
 			zip.write(JSON.stringify(this.database, null, 4))
+			zip.on('finish', resolve)
+			stream.on('finish', resolve)
 			zip.end()
-			stream.on('end', resolve)
+			stream.end()
 		})
 	}
 
     byMetacriticUrl(murl){
         return this.database.find(x => x.data.url == murl)
     }
+}
+
+function yearScore(a: Movie){
+	const thisYear = new Date().getFullYear()
+	return thisYear - (a.data.datePublished||new Date(1950)).getFullYear()
 }

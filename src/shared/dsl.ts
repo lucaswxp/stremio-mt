@@ -1,5 +1,7 @@
 import { Type, deserialize } from 'class-transformer'
 import { v4 } from 'uuid';
+import * as _ from 'lodash'
+
 
 /**
  * Base class for Movies and TV Shows
@@ -29,7 +31,9 @@ export class Picture {
 export class Movie extends Picture {
     @Type(() => MovieData)
     data: MovieData
-
+    tokenized: string[] = [] //used for search
+    interestLevel: 'none'|'low'|'medium'|'high'|'veryhigh' // low < 20, medium < 100, high < 300, veryhigh > 300 
+    interestLevelNumber = 0
     constructor(data: MovieData, crawledAt: Date, imdbId?: string){
         super()
         this.data = data
@@ -38,7 +42,18 @@ export class Movie extends Picture {
     }
 
     static fromJSON(plain: any){
-        return deserialize(Movie, JSON.stringify(plain))
+        const dt = deserialize(Movie, JSON.stringify(plain))
+        dt.tokenized = tokenize(dt.data.name)
+        const total = dt.data.totalUserReviews || 0
+
+        if(total == 0) dt.interestLevel = 'none'
+        else if(total < 20) dt.interestLevel = 'low'
+        else if(total < 100) dt.interestLevel = 'medium'
+        else if(total < 300) dt.interestLevel = 'high'
+        else dt.interestLevel = 'veryhigh'
+        dt.interestLevelNumber = levels[dt.interestLevel]
+
+        return dt
     }
 
     getRemoteImage(){
@@ -53,8 +68,8 @@ export class Movie extends Picture {
         return this.data.image
     }
 
-    getScore() {
-        return this.data.aggregateRating ? parseInt(this.data.aggregateRating.ratingValue) : null
+    getScore(defaultVal = null) {
+        return this.data.aggregateRating ? parseInt(this.data.aggregateRating.ratingValue) : defaultVal
     }
 }
 
@@ -78,4 +93,19 @@ export class MovieData {
     static fromJSON(plain: string){
         return deserialize(MovieData, (plain))
     }
+}
+
+export function getRelevance(keywords1: string[], keywords2: string[]){
+	return _.intersection(keywords1, keywords2).length
+}
+
+export function tokenize(str: string){
+	return str.replace(/[.!?\\\/"'+_()!,-]/g, ' ').toLowerCase().split(/\s+/)
+}
+const levels = {
+    'none': 0,
+    'low': 1,
+    'medium': 2,
+    'high': 3,
+    'veryhigh': 4
 }

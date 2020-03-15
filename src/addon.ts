@@ -2,6 +2,7 @@
 import "reflect-metadata"
 import { MoviesStore } from "./readModel/moviesModel"
 import { addonBuilder } from "stremio-addon-sdk"
+import { tokenize, Movie } from "./shared/dsl"
 
 enum Catalogs {
 	Metacritic = 'metacritic-stremio',
@@ -44,30 +45,51 @@ export async function build(){
 	const builder = new addonBuilder(manifest)
 
 	builder.defineCatalogHandler(async ({type, id, extra}) => {
-		console.log("request for catalogs: "+type+" "+id)
+		console.log("request for catalogs: "+(type||'')+" "+id, extra)
 		// Docs: https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/requests/defineCatalogHandler.md
 		
 		const MoviesModel = await MoviesStore.getInstance()
 		
-		if(id == Catalogs.Metacritic){
+		let all: Movie[]
 
+
+		if(id == Catalogs.Metacritic || !id){
+			all = await MoviesModel.top()
 		}else if(id == Catalogs.MustSee){
+			all = await MoviesModel.mustSee()
+		}else{
+			console.log(`${id} catalog not recognized`)
+		}
 
+		// genre filter
+		if(extra.genre){
+			all = all.filter(x => (x.data.genre||[]).includes(extra.genre))
 		}
-		let all = await MoviesModel.all()
+
+		// search
 		if(extra.search){
-			all = all.filter(x => {
-				return x.data.name.includes(extra.search)
-			})
+			const keywords = tokenize(extra.search)
+
+			// simple pointing system for search
+			const relevance = all.map(x => {
+				let sum = 0
+				for(let k of keywords){
+					sum += x.data.name.toLocaleLowerCase().includes(k) ? 1 : 0
+				}
+				return {movie:x,sum}
+			}).filter(x => x.sum > 0).sort((a,b) => b.sum - a.sum)
+			all = relevance.map(x => x.movie)
 		}
-		all.sort((a,b) => (b.data.datePublished||new Date(1999)).getTime() - (a.data.datePublished||new Date(1999)).getTime())
-		all.sort((a,b) => (b.getScore() ? 1 : 0) - (a.getScore() ? 1 : 0)) // movies that have no score go to bottom
+
+		// paging
+		all = all.slice(extra.skip ? parseInt(extra.skip) : 0, 100)
+
 		const metas = []
 		all.forEach(x => {
 			metas.push({
 				id: x.imdbId||x.data.url,
 				type: "movie",
-				name: x.data.name,
+				name: x.data.name + (x.data.datePublished ? ` (${x.data.datePublished.getFullYear()})` : ''),
 				genres: x.data.genre,
 				description: x.data.description,
 				released: x.data.datePublished,
