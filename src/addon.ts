@@ -36,8 +36,7 @@ export async function build(){
 			"catalog"
 		],
 		"types": [
-			"movie",
-			"series"
+			"movie"
 		],
 		"name": "Metacritic Movie Catalog",
 		"description": "Brings one of the most respected critics aggregators of the world to Stremio. Check critics scores and all \"Must See\" Movies recommended by Metacritic."
