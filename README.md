@@ -21,11 +21,27 @@ How many times have you found youself in the following situation?
 
 This addon tries to help users to make an informed decision on what to watch next:
 
+<p align="center">
+  <img src="/public/screen-top.png">
+</p>
+<p align="center">
+  <img src="/public/screen-must-see.png">
+</p>
+<p align="center">
+  <img src="/public/screen-by-genre.png">
+</p>
+
 It's also compatible with others addons, so you can watch the movies directly from the catalog if you have the correct streaming addons installed.
 
 We all know there are tons of ratings websites out there, like IMDB or Rotten Tomatoes. But just between us, I think they are too soft with their reviews. That's why I like Metacritic better, I almost never disappoint with their reviews.
 
 Enjoy and happy watching!
+
+Installation
+===
+Just paste the following URL in your Addon search bar:
+
+`https://stremio-mt.crabdance.com/manifest.json`
 
 For developers
 ===
