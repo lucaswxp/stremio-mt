@@ -22,13 +22,13 @@ How many times have you found youself in the following situation?
 This addon tries to help users to make an informed decision on what to watch next:
 
 <p align="center">
-  <img src="/public/screen-top.jpeg">
+  <img src="/public/screen-top.jpeg" style="width: 400px">
 </p>
 <p align="center">
-  <img src="/public/screen-must-see.jpeg">
+  <img src="/public/screen-must-see.jpeg" style="width: 400px">
 </p>
 <p align="center">
-  <img src="/public/screen-by-genre.jpeg">
+  <img src="/public/screen-by-genre.jpeg" style="width: 400px">
 </p>
 
 It's also compatible with others addons, so you can watch the movies directly from the catalog if you have the correct streaming addons installed.
