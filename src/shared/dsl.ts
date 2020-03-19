@@ -96,11 +96,16 @@ export class MovieData {
 }
 
 export function getRelevance(keywords1: string[], keywords2: string[]){
-	return _.intersection(keywords1, keywords2).length
+    const intersection = _.intersection(keywords1, keywords2).length
+    const similarMatch = (intersection * 100)/keywords1.length // weight 2
+    const sizeMatch = (keywords1.length * 100) / keywords2.length // weight 1
+    const match = (similarMatch + sizeMatch) / 2
+
+    return match >= 90 ? match : ((keywords2.join(' ').startsWith(keywords1.join(' ')) ? 91 : 0))
 }
 
 export function tokenize(str: string){
-	return str.replace(/[.!?\\\/"'+_()!,-]/g, ' ').toLowerCase().split(/\s+/)
+	return str.replace(/[.!?\\\/"'+_()!,-]/g, ' ').toLowerCase().replace(/&/g, 'and').trim().split(/\s+/)
 }
 const levels = {
     'none': 0,

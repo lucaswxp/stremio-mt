@@ -19,7 +19,7 @@ How many times have you found youself in the following situation?
 5. Browse...
 6. Go to sleep because can't make up your freaking mind!
 
-This addon tries to help users to make an informed decision on what to watch next:
+This addon tries to help users to make an informed decision on what to watch next by putting metacritic score right next to the title:
 
 <p align="center">
   <img src="/public/screen-top.jpeg" width="400">

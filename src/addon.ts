@@ -87,14 +87,14 @@ async function buildManifest(){
 			{
 				"type": "movie",
 				"id": Catalogs.Metacritic,
-				"name": "Top",
+				"name": "Metacritic",
 				"genres": genres,
 				"extraSupported": ['genre', 'skip', 'search'],
 			},
 			{
 				"type": "movie",
 				"id": Catalogs.MustSee,
-				"name": "Must See",
+				"name": "Must See Metacritic",
 				"genres": genres,
 				"extraSupported": ['genre', 'skip', 'search'],
 			},
