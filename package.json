@@ -33,7 +33,7 @@
 		"class-transformer": "^0.2.0",
 		"jimp": "^0.9.3",
 		"lodash": "^4.17.15",
-		"moment": "^2.24.0",
+		"moment": "^2.29.4",
 		"mongoose": "5.4.19",
 		"reflect-metadata": "^0.1.13",
 		"request": "^2.88.0",
